@@ -61,23 +61,73 @@ def salvar_csv_github(novo_conteudo, sha=None):
 def adicionar_resposta(dados):
     conteudo, sha = ler_csv_github()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     if conteudo is None:
         novo = ",".join(COLUNAS) + "\n"
     else:
         novo = conteudo
-
     linha = f'"{timestamp}"'
     for campo in COLUNAS[1:]:
         linha += f',"{escapar(dados.get(campo, ""))}"'
     linha += "\n"
-
     novo += linha
     salvar_csv_github(novo, sha)
 
+# ── CSS personalizado ────────────────────────────────────────────────────────
+st.markdown("""
+<style>
+    .nota-label {
+        font-size: 0.9rem;
+        color: #444;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+    div[data-testid="stRadio"] > div {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    div[data-testid="stRadio"] > div > label {
+        background-color: #f0f0f0;
+        border: 1.5px solid #ccc;
+        border-radius: 50px !important;
+        padding: 6px 14px !important;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+        transition: all 0.2s;
+        min-width: 42px;
+        text-align: center;
+    }
+    div[data-testid="stRadio"] > div > label:hover {
+        background-color: #e0e8ff;
+        border-color: #4a6cf7;
+        color: #4a6cf7;
+    }
+    div[data-testid="stRadio"] > div > label[data-baseweb="radio"] input:checked + div {
+        background-color: #4a6cf7;
+        color: white;
+    }
+    div[data-testid="stRadio"] label span { display: none; }
+    .bloco-nota {
+        background: #f8f9ff;
+        border: 1px solid #e0e4f7;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 14px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+def nota_radio(label, key):
+    """Renderiza botões 0-10 arredondados via st.radio horizontal."""
+    st.markdown(f'<div class="nota-label">{label}</div>', unsafe_allow_html=True)
+    opcoes = [str(i) for i in range(11)]
+    valor = st.radio("", opcoes, index=5, key=key, horizontal=True, label_visibility="collapsed")
+    return int(valor)
+
 # ── Interface ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Mapeamento e Autoavaliação", page_icon="📋", layout="wide")
-
 st.title("📋 Mapeamento e Autoavaliação")
 st.markdown("**Psicólogos Escolares — SEE-SP**")
 st.divider()
@@ -108,7 +158,7 @@ with st.form("formulario_completo"):
     col3, col4 = st.columns(2)
     with col3:
         grupo = st.selectbox("Grupo *", ["", "Grupo 01", "Grupo 02", "Grupo 03", "Grupo 04"])
-        inicio_atuacao = st.text_input("Início do Período de Atuação na UE *", placeholder="Número de dias ou data")
+        inicio_atuacao = st.text_input("Início do Período de Atuação na UE *", placeholder="Ex: 46225")
     with col4:
         acolhimentos_por_visita = st.selectbox("Em média, quantos acolhimentos por visita? *", [
             "", "1", "2", "3", "4", "5 ou mais"
@@ -119,26 +169,23 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 2 - AUTOAVALIAÇÃO (0-10)
-    st.subheader("2. Autoavaliação (0 = nunca / 10 = sempre)")
-    st.markdown("Avalie cada item de **0 a 10**:")
+    # SEÇÃO 2 - AUTOAVALIAÇÃO
+    st.subheader("2. Autoavaliação")
+    st.markdown("Selecione uma nota de **0** (nunca) a **10** (sempre) para cada item:")
 
-    col_a, col_b = st.columns(2)
-    with col_a:
-        q1 = st.slider("Realizei ações voltadas ao apoio pedagógico e às necessidades de aprendizagem dos estudantes", 0, 10, 5)
-        q2 = st.slider("Com que frequência realizei ações preventivas ou de mediação relacionadas às relações sociais?", 0, 10, 5)
-        q3 = st.slider("O quanto participei das discussões sobre regras, sanções e intervenções nos conflitos?", 0, 10, 5)
-        q4 = st.slider("Com que frequência identifiquei, atuei e acompanhei casos de intimidação/violência?", 0, 10, 5)
-        q5 = st.slider("O quanto estive envolvido em ações relacionadas à participação das famílias e comunidade?", 0, 10, 5)
-        q6 = st.slider("Com que frequência promovi reflexões sobre os espaços físicos e seu impacto no bem-estar?", 0, 10, 5)
-        q7 = st.slider("Como avalio minha atuação colaborativa com professores, gestores e equipe escolar?", 0, 10, 5)
-    with col_b:
-        q8  = st.slider("Com que frequência participei de processos coletivos (reuniões, ATPC, planejamentos)?", 0, 10, 5)
-        q9  = st.slider("O psicólogo escolar é acolhido dentro da escola?", 0, 10, 5)
-        q10 = st.slider("O trabalho do psicólogo é percebido como relevante para a escola e comunidade?", 0, 10, 5)
-        q11 = st.slider("A escola encaminha as situações necessárias à rede protetiva?", 0, 10, 5)
-        q12 = st.slider("A escola realiza ações compartilhadas com a rede protetiva?", 0, 10, 5)
-        q13 = st.slider("Como avalio minha atuação colaborativa com a unidade regional (PEC, Supervisor)?", 0, 10, 5)
+    q1  = nota_radio("Realizei ações voltadas ao apoio pedagógico e às necessidades de aprendizagem dos estudantes", "q1")
+    q2  = nota_radio("Com que frequência realizei ações preventivas ou de mediação relacionadas às relações sociais dos estudantes?", "q2")
+    q3  = nota_radio("O quanto participei das discussões sobre regras, sanções e intervenções nos conflitos?", "q3")
+    q4  = nota_radio("Com que frequência identifiquei, atuei e acompanhei casos de intimidação/violência/casos sensíveis entre estudantes?", "q4")
+    q5  = nota_radio("O quanto estive envolvido em ações ou contatos relacionados à participação das famílias e comunidade?", "q5")
+    q6  = nota_radio("Com que frequência promovi reflexões sobre os aspectos dos espaços físicos escolares que afetam o bem-estar e a convivência?", "q6")
+    q7  = nota_radio("Como avalio minha atuação colaborativa com professores, gestores e equipe escolar?", "q7")
+    q8  = nota_radio("Com que frequência participei de processos coletivos (reuniões, planejamentos, ATPC) ligados à gestão escolar?", "q8")
+    q9  = nota_radio("O psicólogo escolar é acolhido dentro da escola?", "q9")
+    q10 = nota_radio("O trabalho do psicólogo escolar é percebido como algo relevante para a escola e sua comunidade?", "q10")
+    q11 = nota_radio("A escola encaminha as situações necessárias à rede protetiva?", "q11")
+    q12 = nota_radio("A escola realiza ações compartilhadas com a rede protetiva?", "q12")
+    q13 = nota_radio("Como avalio minha atuação colaborativa com a unidade regional de ensino (PEC, Supervisor)?", "q13")
 
     st.divider()
 
@@ -147,13 +194,13 @@ with st.form("formulario_completo"):
     reflexoes_efeitos = st.text_area("As reflexões e efeitos das minhas ações nessa escola foram: *", height=120)
     desafios = st.text_area("Os desafios que encontro nessa escola são: *", height=120)
     ponto_apoio = st.text_area("Um ponto de apoio que ajudaria minha prática seria: *", height=100)
-    pontos_semestre = st.text_area("Pontos importantes para serem trabalhados nesse semestre: *", height=120)
+    pontos_semestre = st.text_area("Pontos importantes para serem trabalhados nesse semestre nesta escola: *", height=120)
     boa_pratica = st.text_area("Uma boa prática que realizei em parceria com a escola: *", height=120)
     sugestao = st.text_area("Alguma sugestão? (opcional)", height=80)
 
     st.divider()
 
-    # SEÇÃO 4 - MAPEAMENTO DA ESCOLA
+    # SEÇÃO 4 - MAPEAMENTO
     st.subheader("4. Mapeamento da Escola")
     col5, col6 = st.columns(2)
     with col5:
@@ -164,19 +211,19 @@ with st.form("formulario_completo"):
     with col6:
         realidade_geografica = st.text_area("Qual a realidade geográfica dessa escola? *", height=100)
 
-    fatores_risco = st.text_area("Fatores de risco identificados na unidade escolar *", height=120)
-    fatores_protecao = st.text_area("Fatores de proteção identificados na unidade escolar *", height=120)
+    fatores_risco = st.text_area("Quais são os fatores de risco que você identifica nessa unidade escolar? *", height=120)
+    fatores_protecao = st.text_area("Quais são os fatores de proteção que você identifica nessa unidade escolar? *", height=120)
     descricao_fenomenos = st.text_area("Descrição, análise e qualificação dos fenômenos observados *", height=150)
 
     st.divider()
 
     # SEÇÃO 5 - PLANEJAMENTO
     st.subheader("5. Planejamento de Atuação")
-    questoes_importantes = st.text_area("Questões importantes para atuação nessa escola *", height=120)
-    relacoes_estabelecer = st.text_area("Relações dentro da escola que precisam ser estabelecidas *", height=100)
-    rede_protetiva = st.text_area("Equipamentos da rede protetiva / parceiros no território *", height=100)
+    questoes_importantes = st.text_area("Questões que acredita serem importantes para atuação nessa escola *", height=120)
+    relacoes_estabelecer = st.text_area("Relações de dentro da escola que precisam ser estabelecidas *", height=100)
+    rede_protetiva = st.text_area("Aponte equipamentos da rede protetiva / parceiros no território da escola *", height=100)
     objetivos_semestre = st.text_area("Objetivos para atuação no semestre (até 3 objetivos) *", height=120)
-    impactos_esperados = st.text_area("Impactos esperados com os objetivos *", height=120)
+    impactos_esperados = st.text_area("Impacto esperado com os objetivos *", height=120)
 
     st.divider()
 
@@ -196,8 +243,9 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # TERMO
+    # SEÇÃO 7 - ENCAMINHAMENTO
     st.subheader("7. Encaminhamento")
+    st.info("O que fazer com esse mapeamento? Este documento serve como base para o planejamento das ações do semestre, articulação com a rede protetiva e acompanhamento pelo PEC e Supervisor.")
     encaminhamento = st.checkbox("Li e estou ciente desses encaminhamentos. *")
 
     st.divider()
@@ -219,53 +267,28 @@ if enviar:
         st.error(f"Por favor, preencha os campos obrigatórios: {', '.join(erros)}")
     else:
         dados = {
-            "email": email,
-            "nome_psicologo": nome_psicologo,
-            "crp": crp,
-            "cpf": cpf,
-            "data_relatorio": data_relatorio,
-            "fundamentacao_teorica": fundamentacao_teorica,
-            "unidade_escolar": unidade_escolar,
-            "unidade_regional": unidade_regional,
-            "grupo": grupo,
-            "inicio_atuacao": inicio_atuacao,
-            "acolhimentos_por_visita": acolhimentos_por_visita,
-            "visitas_semestre": visitas_semestre,
-            "q1_apoio_pedagogico": q1,
-            "q2_acoes_preventivas": q2,
-            "q3_regras_conflitos": q3,
-            "q4_intimidacao_violencia": q4,
-            "q5_familias_comunidade": q5,
-            "q6_espacos_fisicos": q6,
-            "q7_colaboracao_equipe": q7,
-            "q8_processos_coletivos": q8,
-            "q9_acolhimento_psicologo": q9,
-            "q10_relevancia_trabalho": q10,
-            "q11_encaminhamentos_rede": q11,
-            "q12_acoes_rede": q12,
-            "q13_colaboracao_regional": q13,
-            "reflexoes_efeitos": reflexoes_efeitos,
-            "desafios": desafios,
-            "ponto_apoio": ponto_apoio,
-            "pontos_semestre": pontos_semestre,
-            "boa_pratica": boa_pratica,
-            "sugestao": sugestao,
-            "numero_estudantes": numero_estudantes,
-            "etapas_ensino": ", ".join(etapas_ensino),
-            "realidade_geografica": realidade_geografica,
-            "fatores_risco": fatores_risco,
-            "fatores_protecao": fatores_protecao,
-            "descricao_fenomenos": descricao_fenomenos,
-            "questoes_importantes": questoes_importantes,
-            "relacoes_estabelecer": relacoes_estabelecer,
-            "rede_protetiva": rede_protetiva,
-            "objetivos_semestre": objetivos_semestre,
+            "email": email, "nome_psicologo": nome_psicologo, "crp": crp, "cpf": cpf,
+            "data_relatorio": data_relatorio, "fundamentacao_teorica": fundamentacao_teorica,
+            "unidade_escolar": unidade_escolar, "unidade_regional": unidade_regional,
+            "grupo": grupo, "inicio_atuacao": inicio_atuacao,
+            "acolhimentos_por_visita": acolhimentos_por_visita, "visitas_semestre": visitas_semestre,
+            "q1_apoio_pedagogico": q1, "q2_acoes_preventivas": q2, "q3_regras_conflitos": q3,
+            "q4_intimidacao_violencia": q4, "q5_familias_comunidade": q5, "q6_espacos_fisicos": q6,
+            "q7_colaboracao_equipe": q7, "q8_processos_coletivos": q8,
+            "q9_acolhimento_psicologo": q9, "q10_relevancia_trabalho": q10,
+            "q11_encaminhamentos_rede": q11, "q12_acoes_rede": q12, "q13_colaboracao_regional": q13,
+            "reflexoes_efeitos": reflexoes_efeitos, "desafios": desafios,
+            "ponto_apoio": ponto_apoio, "pontos_semestre": pontos_semestre,
+            "boa_pratica": boa_pratica, "sugestao": sugestao,
+            "numero_estudantes": numero_estudantes, "etapas_ensino": ", ".join(etapas_ensino),
+            "realidade_geografica": realidade_geografica, "fatores_risco": fatores_risco,
+            "fatores_protecao": fatores_protecao, "descricao_fenomenos": descricao_fenomenos,
+            "questoes_importantes": questoes_importantes, "relacoes_estabelecer": relacoes_estabelecer,
+            "rede_protetiva": rede_protetiva, "objetivos_semestre": objetivos_semestre,
             "impactos_esperados": impactos_esperados,
             "possibilidades_acoes": ", ".join(possibilidades_acoes),
-            "titulos_acoes": titulos_acoes,
-            "publico_alvo": publico_alvo,
-            "materiais_necessarios": materiais_necessarios,
-            "descricao_acoes": descricao_acoes,
+            "titulos_acoes": titulos_acoes, "publico_alvo": publico_alvo,
+            "materiais_necessarios": materiais_necessarios, "descricao_acoes": descricao_acoes,
             "metodologia": metodologia,
             "encaminhamento": "Li e estou ciente desses encaminhamentos."
         }
