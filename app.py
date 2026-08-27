@@ -1,76 +1,24 @@
 import streamlit as st
 import requests
-import base64
 import json
 from datetime import datetime
 
-# ── Configurações do GitHub ──────────────────────────────────────────────────
-GITHUB_TOKEN  = st.secrets["github"]["token"]
-GITHUB_REPO   = st.secrets["github"]["repo"]
-GITHUB_FILE   = st.secrets["github"]["file"]
-GITHUB_BRANCH = st.secrets["github"]["branch"]
+# ── Configurações do Supabase ────────────────────────────────────────────────
+SUPABASE_URL  = st.secrets["supabase"]["url"]
+SUPABASE_KEY  = st.secrets["supabase"]["anon_key"]
 
 HEADERS = {
-    "Authorization": f"token {GITHUB_TOKEN}",
-    "Accept": "application/vnd.github.v3+json",
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal"
 }
 
-COLUNAS = [
-    "timestamp","email","nome_psicologo","crp","cpf","data_relatorio",
-    "fundamentacao_teorica","unidade_escolar","unidade_regional","grupo",
-    "inicio_atuacao","acolhimentos_por_visita","visitas_semestre",
-    "q1_apoio_pedagogico","q2_acoes_preventivas","q3_regras_conflitos",
-    "q4_intimidacao_violencia","q5_familias_comunidade","q6_espacos_fisicos",
-    "q7_colaboracao_equipe","q8_processos_coletivos","q9_acolhimento_psicologo",
-    "q10_relevancia_trabalho","q11_encaminhamentos_rede","q12_acoes_rede",
-    "q13_colaboracao_regional",
-    "reflexoes_efeitos","desafios","ponto_apoio","pontos_semestre",
-    "boa_pratica","sugestao","numero_estudantes","etapas_ensino",
-    "realidade_geografica","fatores_risco","fatores_protecao",
-    "descricao_fenomenos","questoes_importantes","relacoes_estabelecer",
-    "rede_protetiva","objetivos_semestre","impactos_esperados",
-    "possibilidades_acoes","titulos_acoes","publico_alvo",
-    "materiais_necessarios","descricao_acoes","metodologia","encaminhamento"
-]
-
-def ler_csv_github():
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_FILE}?ref={GITHUB_BRANCH}"
-    r = requests.get(url, headers=HEADERS)
-    if r.status_code == 404:
-        return None, None
-    r.raise_for_status()
-    dados = r.json()
-    conteudo = base64.b64decode(dados["content"]).decode("utf-8")
-    return conteudo, dados["sha"]
-
-def escapar(valor):
-    return str(valor).replace('"', '""').replace('\n', ' ').replace('\r', '')
-
-def salvar_csv_github(novo_conteudo, sha=None):
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_FILE}"
-    payload = {
-        "message": "Nova resposta - Mapeamento e Autoavaliação",
-        "content": base64.b64encode(novo_conteudo.encode("utf-8")).decode("utf-8"),
-        "branch": GITHUB_BRANCH,
-    }
-    if sha:
-        payload["sha"] = sha
-    r = requests.put(url, headers=HEADERS, data=json.dumps(payload))
-    r.raise_for_status()
-
-def adicionar_resposta(dados):
-    conteudo, sha = ler_csv_github()
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    if conteudo is None:
-        novo = ",".join(COLUNAS) + "\n"
-    else:
-        novo = conteudo
-    linha = f'"{timestamp}"'
-    for campo in COLUNAS[1:]:
-        linha += f',"{escapar(dados.get(campo, ""))}"'
-    linha += "\n"
-    novo += linha
-    salvar_csv_github(novo, sha)
+def salvar_supabase(dados):
+    url = f"{SUPABASE_URL}/rest/v1/respostas"
+    r = requests.post(url, headers=HEADERS, data=json.dumps(dados))
+    if r.status_code not in (200, 201):
+        raise Exception(f"Erro ao salvar: {r.status_code} - {r.text}")
 
 # ── CSS personalizado ────────────────────────────────────────────────────────
 st.markdown("""
@@ -104,23 +52,11 @@ st.markdown("""
         border-color: #4a6cf7;
         color: #4a6cf7;
     }
-    div[data-testid="stRadio"] > div > label[data-baseweb="radio"] input:checked + div {
-        background-color: #4a6cf7;
-        color: white;
-    }
     div[data-testid="stRadio"] label span { display: none; }
-    .bloco-nota {
-        background: #f8f9ff;
-        border: 1px solid #e0e4f7;
-        border-radius: 12px;
-        padding: 14px 18px;
-        margin-bottom: 14px;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 def nota_radio(label, key):
-    """Renderiza botões 0-10 arredondados via st.radio horizontal."""
     st.markdown(f'<div class="nota-label">{label}</div>', unsafe_allow_html=True)
     opcoes = [str(i) for i in range(11)]
     valor = st.radio("", opcoes, index=5, key=key, horizontal=True, label_visibility="collapsed")
@@ -134,7 +70,7 @@ st.divider()
 
 with st.form("formulario_completo"):
 
-    # SEÇÃO 1 - IDENTIFICAÇÃO
+    # SEÇÃO 1
     st.subheader("1. Identificação")
     col1, col2 = st.columns(2)
     with col1:
@@ -169,9 +105,9 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 2 - AUTOAVALIAÇÃO
+    # SEÇÃO 2
     st.subheader("2. Autoavaliação")
-    st.markdown("Selecione uma nota de **0** (nunca) a **10** (sempre) para cada item:")
+    st.markdown("Selecione uma nota de **0** (nunca) a **10** (sempre):")
 
     q1  = nota_radio("Realizei ações voltadas ao apoio pedagógico e às necessidades de aprendizagem dos estudantes", "q1")
     q2  = nota_radio("Com que frequência realizei ações preventivas ou de mediação relacionadas às relações sociais dos estudantes?", "q2")
@@ -189,7 +125,7 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 3 - REFLEXÕES
+    # SEÇÃO 3
     st.subheader("3. Reflexões sobre a Atuação")
     reflexoes_efeitos = st.text_area("As reflexões e efeitos das minhas ações nessa escola foram: *", height=120)
     desafios = st.text_area("Os desafios que encontro nessa escola são: *", height=120)
@@ -200,7 +136,7 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 4 - MAPEAMENTO
+    # SEÇÃO 4
     st.subheader("4. Mapeamento da Escola")
     col5, col6 = st.columns(2)
     with col5:
@@ -217,7 +153,7 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 5 - PLANEJAMENTO
+    # SEÇÃO 5
     st.subheader("5. Planejamento de Atuação")
     questoes_importantes = st.text_area("Questões que acredita serem importantes para atuação nessa escola *", height=120)
     relacoes_estabelecer = st.text_area("Relações de dentro da escola que precisam ser estabelecidas *", height=100)
@@ -227,7 +163,7 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 6 - AÇÕES
+    # SEÇÃO 6
     st.subheader("6. Ações")
     possibilidades_acoes = st.multiselect("Possibilidades de Ações *", [
         "Apoio ao processo de ensino-aprendizagem",
@@ -243,9 +179,9 @@ with st.form("formulario_completo"):
 
     st.divider()
 
-    # SEÇÃO 7 - ENCAMINHAMENTO
+    # SEÇÃO 7
     st.subheader("7. Encaminhamento")
-    st.info("O que fazer com esse mapeamento? Este documento serve como base para o planejamento das ações do semestre, articulação com a rede protetiva e acompanhamento pelo PEC e Supervisor.")
+    st.info("Este documento serve como base para o planejamento das ações do semestre, articulação com a rede protetiva e acompanhamento pelo PEC e Supervisor.")
     encaminhamento = st.checkbox("Li e estou ciente desses encaminhamentos. *")
 
     st.divider()
@@ -272,11 +208,8 @@ if enviar:
             "unidade_escolar": unidade_escolar, "unidade_regional": unidade_regional,
             "grupo": grupo, "inicio_atuacao": inicio_atuacao,
             "acolhimentos_por_visita": acolhimentos_por_visita, "visitas_semestre": visitas_semestre,
-            "q1_apoio_pedagogico": q1, "q2_acoes_preventivas": q2, "q3_regras_conflitos": q3,
-            "q4_intimidacao_violencia": q4, "q5_familias_comunidade": q5, "q6_espacos_fisicos": q6,
-            "q7_colaboracao_equipe": q7, "q8_processos_coletivos": q8,
-            "q9_acolhimento_psicologo": q9, "q10_relevancia_trabalho": q10,
-            "q11_encaminhamentos_rede": q11, "q12_acoes_rede": q12, "q13_colaboracao_regional": q13,
+            "q1": q1, "q2": q2, "q3": q3, "q4": q4, "q5": q5, "q6": q6, "q7": q7,
+            "q8": q8, "q9": q9, "q10": q10, "q11": q11, "q12": q12, "q13": q13,
             "reflexoes_efeitos": reflexoes_efeitos, "desafios": desafios,
             "ponto_apoio": ponto_apoio, "pontos_semestre": pontos_semestre,
             "boa_pratica": boa_pratica, "sugestao": sugestao,
@@ -293,7 +226,7 @@ if enviar:
             "encaminhamento": "Li e estou ciente desses encaminhamentos."
         }
         try:
-            adicionar_resposta(dados)
+            salvar_supabase(dados)
             st.success(f"✅ Formulário enviado com sucesso! Obrigado, {nome_psicologo}!")
             st.balloons()
         except Exception as e:
