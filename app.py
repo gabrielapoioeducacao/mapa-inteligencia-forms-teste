@@ -88,7 +88,7 @@ st.markdown("""
 @st.cache_resource
 def init_supabase():
     url = st.secrets["supabase"]["url"]
-    key = st.secrets["supabase"]["anon_key"]
+    key = st.secrets["supabase"]["key"]
     return create_client(url, key)
 
 supabase = init_supabase()
@@ -235,15 +235,15 @@ st.markdown('<div class="secao-titulo">Perguntas Abertas</div>', unsafe_allow_ht
 
 st.markdown('<div class="aviso">💡 Use as perguntas abaixo para registrar exemplos, situações ou aspectos relevantes que complementem sua avaliação.</div>', unsafe_allow_html=True)
 
-destaques = st.text_area(
-    "Quais são os pontos de destaque do líder?",
-    placeholder="Descreva situações concretas que ilustrem os pontos fortes observados...",
-    height=120,
-)
-
 desenvolvimento = st.text_area(
     "Quais são as oportunidades de desenvolvimento do líder?",
     placeholder="Descreva aspectos que poderiam ser aprimorados e como...",
+    height=120,
+)
+
+destaques = st.text_area(
+    "Quais são os pontos de destaque do líder?",
+    placeholder="Descreva situações concretas que ilustrem os pontos fortes observados...",
     height=120,
 )
 
