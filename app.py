@@ -1,6 +1,5 @@
 import streamlit as st
 from supabase import create_client
-from datetime import datetime
 
 # ── Configuração da página ──────────────────────────────────────────────────
 st.set_page_config(
@@ -12,12 +11,8 @@ st.set_page_config(
 # ── CSS personalizado ────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Fonte e base */
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-    /* Cabeçalho principal */
     .header-block {
         background: linear-gradient(135deg, #1a3a5c 0%, #2563a8 100%);
         color: white;
@@ -25,20 +20,9 @@ st.markdown("""
         border-radius: 12px;
         margin-bottom: 2rem;
     }
-    .header-block h1 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin: 0 0 0.3rem 0;
-        color: white;
-    }
-    .header-block p {
-        font-size: 0.9rem;
-        opacity: 0.85;
-        margin: 0;
-        color: white;
-    }
+    .header-block h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 0.3rem 0; color: white; }
+    .header-block p  { font-size: 0.9rem; opacity: 0.85; margin: 0; color: white; }
 
-    /* Bloco de seção */
     .secao-titulo {
         background: #f0f4fb;
         border-left: 4px solid #2563a8;
@@ -50,7 +34,6 @@ st.markdown("""
         color: #1a3a5c;
     }
 
-    /* Comportamento observável */
     .comportamento {
         background: #f8f9fb;
         border: 1px solid #e2e8f0;
@@ -61,7 +44,6 @@ st.markdown("""
         color: #374151;
     }
 
-    /* Aviso */
     .aviso {
         background: #fff7ed;
         border: 1px solid #fed7aa;
@@ -72,7 +54,28 @@ st.markdown("""
         margin: 0.5rem 0 1.5rem 0;
     }
 
-    /* Rodapé */
+    .perfil-card {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 1rem;
+    }
+    .perfil-card:hover { border-color: #2563a8; background: #f0f4fb; }
+
+    .badge-perfil {
+        display: inline-block;
+        background: #2563a8;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.7rem;
+        border-radius: 999px;
+        margin-bottom: 1rem;
+    }
+
     .rodape {
         text-align: center;
         font-size: 0.78rem;
@@ -96,105 +99,31 @@ supabase = init_supabase()
 # ── Constantes ───────────────────────────────────────────────────────────────
 URES = [
     "Selecione a URE",
-    "URE ADAMANTINA",
-    "URE AMERICANA",
-    "URE ANDRADINA",
-    "URE APIAI",
-    "URE ARACATUBA",
-    "URE ARARAQUARA",
-    "URE ASSIS",
-    "URE AVARE",
-    "URE BARRETOS",
-    "URE BAURU",
-    "URE BIRIGUI",
-    "URE BOTUCATU",
-    "URE BRAGANCA PAULISTA",
-    "URE CAIEIRAS",
-    "URE CAMPINAS LESTE",
-    "URE CAMPINAS OESTE",
-    "URE CAPIVARI",
-    "URE CARAGUATATUBA",
-    "URE CARAPICUIBA",
-    "URE CATANDUVA",
-    "URE CENTRO",
-    "URE CENTRO OESTE",
-    "URE CENTRO SUL",
-    "URE DIADEMA",
-    "URE FERNANDOPOLIS",
-    "URE FRANCA",
-    "URE GUARATINGUETA",
-    "URE GUARULHOS NORTE",
-    "URE GUARULHOS SUL",
-    "URE ITAPECERICA DA SERRA",
-    "URE ITAPETININGA",
-    "URE ITAPEVA",
-    "URE ITAPEVI",
-    "URE ITAQUAQUECETUBA",
-    "URE ITARARE",
-    "URE ITU",
-    "URE JABOTICABAL",
-    "URE JACAREI",
-    "URE JALES",
-    "URE JAU",
-    "URE JOSE BONIFACIO",
-    "URE JUNDIAI",
-    "URE LESTE 1",
-    "URE LESTE 2",
-    "URE LESTE 3",
-    "URE LESTE 4",
-    "URE LESTE 5",
-    "URE LIMEIRA",
-    "URE LINS",
-    "URE MARILIA",
-    "URE MAUA",
-    "URE MIRACATU",
-    "URE MIRANTE DO PARANAPANEMA",
-    "URE MOGI DAS CRUZES",
-    "URE MOGI MIRIM",
-    "URE NORTE 1",
-    "URE NORTE 2",
-    "URE OSASCO",
-    "URE OURINHOS",
-    "URE PENAPOLIS",
-    "URE PINDAMONHANGABA",
-    "URE PIRACICABA",
-    "URE PIRAJU",
-    "URE PIRASSUNUNGA",
-    "URE PRESIDENTE PRUDENTE",
-    "URE REGISTRO",
-    "URE RIBEIRAO PRETO",
-    "URE SANTO ANASTACIO",
-    "URE SANTO ANDRE",
-    "URE SANTOS",
-    "URE SAO BERNARDO DO CAMPO",
-    "URE SAO CARLOS",
-    "URE SAO JOAO DA BOA VISTA",
-    "URE SAO JOAQUIM DA BARRA",
-    "URE SAO JOSE DO RIO PRETO",
-    "URE SAO JOSE DOS CAMPOS",
-    "URE SAO ROQUE",
-    "URE SAO VICENTE",
-    "URE SERTAOZINHO",
-    "URE SOROCABA",
-    "URE SUL 1",
-    "URE SUL 2",
-    "URE SUL 3",
-    "URE SUMARE",
-    "URE SUZANO",
-    "URE TABOAO DA SERRA",
-    "URE TAQUARITINGA",
-    "URE TAUBATE",
-    "URE TUPA",
-    "URE VOTORANTIM",
-    "URE VOTUPORANGA",
-]
-
-PERIODOS = [
-    "Selecione o período",
-    "2025 — 1º Semestre",
-    "2025 — 2º Semestre",
-    "2026 — 1º Semestre",
-    "2026 — 2º Semestre",
+    "URE ADAMANTINA", "URE AMERICANA", "URE ANDRADINA", "URE APIAI",
+    "URE ARACATUBA", "URE ARARAQUARA", "URE ASSIS", "URE AVARE",
+    "URE BARRETOS", "URE BAURU", "URE BIRIGUI", "URE BOTUCATU",
+    "URE BRAGANCA PAULISTA", "URE CAIEIRAS", "URE CAMPINAS LESTE",
+    "URE CAMPINAS OESTE", "URE CAPIVARI", "URE CARAGUATATUBA",
+    "URE CARAPICUIBA", "URE CATANDUVA", "URE CENTRO", "URE CENTRO OESTE",
+    "URE CENTRO SUL", "URE DIADEMA", "URE FERNANDOPOLIS", "URE FRANCA",
+    "URE GUARATINGUETA", "URE GUARULHOS NORTE", "URE GUARULHOS SUL",
+    "URE ITAPECERICA DA SERRA", "URE ITAPETININGA", "URE ITAPEVA",
+    "URE ITAPEVI", "URE ITAQUAQUECETUBA", "URE ITARARE", "URE ITU",
+    "URE JABOTICABAL", "URE JACAREI", "URE JALES", "URE JAU",
+    "URE JOSE BONIFACIO", "URE JUNDIAI", "URE LESTE 1", "URE LESTE 2",
+    "URE LESTE 3", "URE LESTE 4", "URE LESTE 5", "URE LIMEIRA", "URE LINS",
+    "URE MARILIA", "URE MAUA", "URE MIRACATU", "URE MIRANTE DO PARANAPANEMA",
+    "URE MOGI DAS CRUZES", "URE MOGI MIRIM", "URE NORTE 1", "URE NORTE 2",
+    "URE OSASCO", "URE OURINHOS", "URE PENAPOLIS", "URE PINDAMONHANGABA",
+    "URE PIRACICABA", "URE PIRAJU", "URE PIRASSUNUNGA",
+    "URE PRESIDENTE PRUDENTE", "URE REGISTRO", "URE RIBEIRAO PRETO",
+    "URE SANTO ANASTACIO", "URE SANTO ANDRE", "URE SANTOS",
+    "URE SAO BERNARDO DO CAMPO", "URE SAO CARLOS", "URE SAO JOAO DA BOA VISTA",
+    "URE SAO JOAQUIM DA BARRA", "URE SAO JOSE DO RIO PRETO",
+    "URE SAO JOSE DOS CAMPOS", "URE SAO ROQUE", "URE SAO VICENTE",
+    "URE SERTAOZINHO", "URE SOROCABA", "URE SUL 1", "URE SUL 2", "URE SUL 3",
+    "URE SUMARE", "URE SUZANO", "URE TABOAO DA SERRA", "URE TAQUARITINGA",
+    "URE TAUBATE", "URE TUPA", "URE VOTORANTIM", "URE VOTUPORANGA",
 ]
 
 ESCALA = {
@@ -256,7 +185,13 @@ COMPETENCIAS = {
     },
 }
 
-# ── Cabeçalho ────────────────────────────────────────────────────────────────
+SEM_INSUMOS_KEY = "Não tenho insumos suficientes para avaliar"
+
+# ── Session state ─────────────────────────────────────────────────────────────
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "perfil"
+
+# ── Cabeçalho (aparece em todas as páginas) ───────────────────────────────────
 st.markdown("""
 <div class="header-block">
     <h1>🏫 Avaliação de Desempenho e Competências</h1>
@@ -264,162 +199,234 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-Esta avaliação tem caráter **formativo e confidencial**. Responda considerando comportamentos 
-efetivamente observados durante o período de referência, com base em situações concretas.
-""")
+# ════════════════════════════════════════════════════════════════════════════════
+# PÁGINA 1 — Seleção de perfil
+# ════════════════════════════════════════════════════════════════════════════════
+if st.session_state.pagina == "perfil":
 
-# ── SEÇÃO 1: Identificação ───────────────────────────────────────────────────
-st.markdown('<div class="secao-titulo">Identificação do Participante</div>', unsafe_allow_html=True)
+    st.markdown("### Qual é o seu perfil?")
+    st.markdown("Selecione o perfil que melhor descreve sua função no Programa para iniciar a avaliação.")
+    st.markdown("")
 
-col1, col2 = st.columns(2)
-with col1:
-    ure = st.selectbox(
-        "URE *",
-        URES,
-        index=0,
-        placeholder="Digite para buscar sua URE...",
-    )
-with col2:
-    perfil = st.selectbox("Perfil do respondente *", ["Selecione", "Psicólogo", "PEC", "Gestor do Programa"])
+    col1, col2, col3 = st.columns(3)
 
-email = st.text_input("E-mail institucional *", placeholder="nome@educacao.sp.gov.br")
-nome_lider = st.text_input("Nome do Líder avaliado *", placeholder="Nome completo do Líder Regional")
-periodo = st.selectbox("Período de referência *", PERIODOS)
+    with col1:
+        st.markdown("#### 🧠")
+        st.markdown("**Psicólogo**")
+        st.markdown("Profissional de psicologia escolar atuando nas unidades.")
+        if st.button("Sou Psicólogo", use_container_width=True, key="btn_psi"):
+            st.session_state.perfil = "Psicólogo"
+            st.session_state.pagina = "formulario"
+            st.rerun()
 
-# ── SEÇÃO 2 a 5: Competências ────────────────────────────────────────────────
-respostas = {}  # {campo_base: {"nota": int|None, "sem_insumos": bool}}
+    with col2:
+        st.markdown("#### 📋")
+        st.markdown("**PEC**")
+        st.markdown("Profissional de Educação e Cultura vinculado à URE.")
+        if st.button("Sou PEC", use_container_width=True, key="btn_pec"):
+            st.session_state.perfil = "PEC"
+            st.session_state.pagina = "formulario"
+            st.rerun()
 
-SEM_INSUMOS_KEY = "Não tenho insumos suficientes para avaliar"
+    with col3:
+        st.markdown("#### 🏛️")
+        st.markdown("**Gestor**")
+        st.markdown("Gestor do Programa responsável pela supervisão regional.")
+        if st.button("Sou Gestor", use_container_width=True, key="btn_ges"):
+            st.session_state.perfil = "Gestor do Programa"
+            st.session_state.pagina = "formulario"
+            st.rerun()
 
-for comp_key, comp in COMPETENCIAS.items():
-    st.markdown(f'<div class="secao-titulo">{comp["titulo"]}</div>', unsafe_allow_html=True)
-    st.caption(comp["definicao"])
+    st.markdown("""
+    <div class="rodape">
+        Programa Psicólogos nas Escolas · Apoio Educação · Secretaria de Estado da Educação de São Paulo<br>
+        As respostas são confidenciais e utilizadas exclusivamente para fins de desenvolvimento profissional.
+    </div>
+    """, unsafe_allow_html=True)
 
-    for campo, subtitulo, comportamento in comp["itens"]:
-        st.markdown(f"**{subtitulo}**")
-        st.markdown(f'<div class="comportamento">📋 {comportamento}</div>', unsafe_allow_html=True)
+# ════════════════════════════════════════════════════════════════════════════════
+# PÁGINA 2 — Formulário completo
+# ════════════════════════════════════════════════════════════════════════════════
+elif st.session_state.pagina == "formulario":
 
-        opcoes = [SEM_INSUMOS_KEY] + list(ESCALA.keys())
-        escolha = st.radio(
-            "Avaliação:",
-            opcoes,
-            key=f"radio_{campo}",
-            index=0,
-            label_visibility="collapsed",
-            horizontal=False,
-        )
+    perfil = st.session_state.perfil
 
-        if escolha == SEM_INSUMOS_KEY:
-            respostas[campo] = {"nota": None, "sem_insumos": True}
-        else:
-            respostas[campo] = {"nota": ESCALA[escolha], "sem_insumos": False}
+    # Badge do perfil selecionado + botão voltar
+    col_badge, col_voltar = st.columns([3, 1])
+    with col_badge:
+        st.markdown(f'<span class="badge-perfil">👤 {perfil}</span>', unsafe_allow_html=True)
+    with col_voltar:
+        if st.button("← Voltar", key="btn_voltar"):
+            st.session_state.pagina = "perfil"
+            st.rerun()
 
-        st.divider()
+    st.markdown("""
+    Esta avaliação tem caráter **formativo e confidencial**. Responda considerando comportamentos 
+    efetivamente observados durante o período de referência, com base em situações concretas.
+    """)
 
-# ── SEÇÃO 6: Perguntas abertas ───────────────────────────────────────────────
-st.markdown('<div class="secao-titulo">Perguntas Abertas</div>', unsafe_allow_html=True)
+    # ── Identificação ─────────────────────────────────────────────────────────
+    st.markdown('<div class="secao-titulo">Identificação do Participante</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="aviso">💡 Use as perguntas abaixo para registrar exemplos, situações ou aspectos relevantes que complementem sua avaliação.</div>', unsafe_allow_html=True)
+    ure = st.selectbox("URE *", URES, index=0, placeholder="Digite para buscar sua URE...")
+    email = st.text_input("E-mail institucional *", placeholder="nome@educacao.sp.gov.br")
+    nome_lider = st.text_input("Nome do Líder avaliado *", placeholder="Nome completo do Líder Regional")
 
-desenvolvimento = st.text_area(
-    "Quais são as oportunidades de desenvolvimento do líder?",
-    placeholder="Descreva aspectos que poderiam ser aprimorados e como...",
-    height=120,
-)
+    # ── Competências ──────────────────────────────────────────────────────────
+    respostas = {}
 
-destaques = st.text_area(
-    "Quais são os pontos de destaque do líder?",
-    placeholder="Descreva situações concretas que ilustrem os pontos fortes observados...",
-    height=120,
-)
+    for comp_key, comp in COMPETENCIAS.items():
+        st.markdown(f'<div class="secao-titulo">{comp["titulo"]}</div>', unsafe_allow_html=True)
+        st.caption(comp["definicao"])
 
-# Pergunta exclusiva do Gestor
-entregas_gestor = None
-if perfil == "Gestor do Programa":
-    st.markdown('<div class="secao-titulo">Bloco Exclusivo — Gestor do Programa</div>', unsafe_allow_html=True)
-    st.markdown("Esta questão deve ser respondida somente pelo **Gestor do Programa**.")
-    entregas_gestor = st.text_area(
-        "Quais são os pontos de desenvolvimento e potenciais do líder em relação às entregas?",
-        placeholder="Considere prazos, qualidade e consistência das entregas pactuadas...",
+        for campo, subtitulo, comportamento in comp["itens"]:
+            st.markdown(f"**{subtitulo}**")
+            st.markdown(f'<div class="comportamento">📋 {comportamento}</div>', unsafe_allow_html=True)
+
+            opcoes = [SEM_INSUMOS_KEY] + list(ESCALA.keys())
+            escolha = st.radio(
+                "Avaliação:",
+                opcoes,
+                key=f"radio_{campo}",
+                index=0,
+                label_visibility="collapsed",
+                horizontal=False,
+            )
+
+            if escolha == SEM_INSUMOS_KEY:
+                respostas[campo] = {"nota": None, "sem_insumos": True}
+            else:
+                respostas[campo] = {"nota": ESCALA[escolha], "sem_insumos": False}
+
+            st.divider()
+
+    # ── Perguntas abertas ─────────────────────────────────────────────────────
+    st.markdown('<div class="secao-titulo">Perguntas Abertas</div>', unsafe_allow_html=True)
+    st.markdown('<div class="aviso">💡 Use as perguntas abaixo para registrar exemplos, situações ou aspectos relevantes que complementem sua avaliação.</div>', unsafe_allow_html=True)
+
+    desenvolvimento = st.text_area(
+        "Quais são as oportunidades de desenvolvimento do líder?",
+        placeholder="Descreva aspectos que poderiam ser aprimorados e como...",
         height=120,
     )
 
-# ── Validação e envio ────────────────────────────────────────────────────────
-st.markdown("---")
+    destaques = st.text_area(
+        "Quais são os pontos de destaque do líder?",
+        placeholder="Descreva situações concretas que ilustrem os pontos fortes observados...",
+        height=120,
+    )
 
-def validar():
-    erros = []
-    if ure == "Selecione a URE":
-        erros.append("Selecione a URE.")
-    if perfil == "Selecione":
-        erros.append("Selecione o perfil do respondente.")
-    if not email or "@" not in email:
-        erros.append("Informe um e-mail institucional válido.")
-    if not nome_lider.strip():
-        erros.append("Informe o nome do Líder avaliado.")
-    if periodo == "Selecione o período":
-        erros.append("Selecione o período de referência.")
-    return erros
+    # Pergunta exclusiva do Gestor
+    entregas_gestor = None
+    if perfil == "Gestor do Programa":
+        st.markdown('<div class="secao-titulo">Bloco Exclusivo — Gestor do Programa</div>', unsafe_allow_html=True)
+        st.markdown("Esta questão deve ser respondida somente pelo **Gestor do Programa**.")
+        entregas_gestor = st.text_area(
+            "Quais são os pontos de desenvolvimento e potenciais do líder em relação às entregas?",
+            placeholder="Considere prazos, qualidade e consistência das entregas pactuadas...",
+            height=120,
+        )
 
-if st.button("✅ Enviar avaliação", type="primary", use_container_width=True):
-    erros = validar()
-    if erros:
-        for e in erros:
-            st.error(e)
-    else:
-        # Monta o payload
-        payload = {
-            "ure": ure,
-            "perfil_respondente": perfil.lower().replace(" do programa", "").replace(" ", "_"),
-            "email_respondente": email.strip().lower(),
-            "nome_lider": nome_lider.strip(),
-            "periodo_referencia": periodo,
-            # Escuta
-            "escuta_1_nota": respostas["escuta_1"]["nota"],
-            "escuta_1_sem_insumos": respostas["escuta_1"]["sem_insumos"],
-            "escuta_2_nota": respostas["escuta_2"]["nota"],
-            "escuta_2_sem_insumos": respostas["escuta_2"]["sem_insumos"],
-            "escuta_3_nota": respostas["escuta_3"]["nota"],
-            "escuta_3_sem_insumos": respostas["escuta_3"]["sem_insumos"],
-            # Práxis
-            "praxis_1_nota": respostas["praxis_1"]["nota"],
-            "praxis_1_sem_insumos": respostas["praxis_1"]["sem_insumos"],
-            "praxis_2_nota": respostas["praxis_2"]["nota"],
-            "praxis_2_sem_insumos": respostas["praxis_2"]["sem_insumos"],
-            "praxis_3_nota": respostas["praxis_3"]["nota"],
-            "praxis_3_sem_insumos": respostas["praxis_3"]["sem_insumos"],
-            # Multiplicação
-            "multiplicacao_1_nota": respostas["multiplicacao_1"]["nota"],
-            "multiplicacao_1_sem_insumos": respostas["multiplicacao_1"]["sem_insumos"],
-            "multiplicacao_2_nota": respostas["multiplicacao_2"]["nota"],
-            "multiplicacao_2_sem_insumos": respostas["multiplicacao_2"]["sem_insumos"],
-            "multiplicacao_3_nota": respostas["multiplicacao_3"]["nota"],
-            "multiplicacao_3_sem_insumos": respostas["multiplicacao_3"]["sem_insumos"],
-            # Ética
-            "etica_1_nota": respostas["etica_1"]["nota"],
-            "etica_1_sem_insumos": respostas["etica_1"]["sem_insumos"],
-            "etica_2_nota": respostas["etica_2"]["nota"],
-            "etica_2_sem_insumos": respostas["etica_2"]["sem_insumos"],
-            "etica_3_nota": respostas["etica_3"]["nota"],
-            "etica_3_sem_insumos": respostas["etica_3"]["sem_insumos"],
-            # Qualitativo
-            "qualitativo_destaques": destaques.strip() or None,
-            "qualitativo_desenvolvimento": desenvolvimento.strip() or None,
-            "qualitativo_entregas_gestor": entregas_gestor.strip() if entregas_gestor else None,
-        }
+    # ── Validação e envio ─────────────────────────────────────────────────────
+    st.markdown("---")
 
-        try:
-            supabase.table("avaliacoes_lider").insert(payload).execute()
-            st.success("✅ Avaliação enviada com sucesso! Obrigado pela sua participação.")
-            st.balloons()
-        except Exception as e:
-            st.error(f"Erro ao enviar a avaliação. Tente novamente. Detalhes: {e}")
+    def validar():
+        erros = []
+        if ure == "Selecione a URE":
+            erros.append("Selecione a URE.")
+        if not email or "@" not in email:
+            erros.append("Informe um e-mail institucional válido.")
+        if not nome_lider.strip():
+            erros.append("Informe o nome do Líder avaliado.")
+        return erros
 
-# ── Rodapé ───────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="rodape">
-    Programa Psicólogos nas Escolas · Apoio Educação · Secretaria de Estado da Educação de São Paulo<br>
-    As respostas são confidenciais e utilizadas exclusivamente para fins de desenvolvimento profissional.
-</div>
-""", unsafe_allow_html=True)
+    if st.button("✅ Enviar avaliação", type="primary", use_container_width=True):
+        erros = validar()
+        if erros:
+            for e in erros:
+                st.error(e)
+        else:
+            payload = {
+                "ure": ure,
+                "perfil_respondente": perfil.lower().replace(" do programa", "").replace(" ", "_"),
+                "email_respondente": email.strip().lower(),
+                "nome_lider": nome_lider.strip(),
+                # Escuta
+                "escuta_1_nota": respostas["escuta_1"]["nota"],
+                "escuta_1_sem_insumos": respostas["escuta_1"]["sem_insumos"],
+                "escuta_2_nota": respostas["escuta_2"]["nota"],
+                "escuta_2_sem_insumos": respostas["escuta_2"]["sem_insumos"],
+                "escuta_3_nota": respostas["escuta_3"]["nota"],
+                "escuta_3_sem_insumos": respostas["escuta_3"]["sem_insumos"],
+                # Práxis
+                "praxis_1_nota": respostas["praxis_1"]["nota"],
+                "praxis_1_sem_insumos": respostas["praxis_1"]["sem_insumos"],
+                "praxis_2_nota": respostas["praxis_2"]["nota"],
+                "praxis_2_sem_insumos": respostas["praxis_2"]["sem_insumos"],
+                "praxis_3_nota": respostas["praxis_3"]["nota"],
+                "praxis_3_sem_insumos": respostas["praxis_3"]["sem_insumos"],
+                # Multiplicação
+                "multiplicacao_1_nota": respostas["multiplicacao_1"]["nota"],
+                "multiplicacao_1_sem_insumos": respostas["multiplicacao_1"]["sem_insumos"],
+                "multiplicacao_2_nota": respostas["multiplicacao_2"]["nota"],
+                "multiplicacao_2_sem_insumos": respostas["multiplicacao_2"]["sem_insumos"],
+                "multiplicacao_3_nota": respostas["multiplicacao_3"]["nota"],
+                "multiplicacao_3_sem_insumos": respostas["multiplicacao_3"]["sem_insumos"],
+                # Ética
+                "etica_1_nota": respostas["etica_1"]["nota"],
+                "etica_1_sem_insumos": respostas["etica_1"]["sem_insumos"],
+                "etica_2_nota": respostas["etica_2"]["nota"],
+                "etica_2_sem_insumos": respostas["etica_2"]["sem_insumos"],
+                "etica_3_nota": respostas["etica_3"]["nota"],
+                "etica_3_sem_insumos": respostas["etica_3"]["sem_insumos"],
+                # Qualitativo
+                "qualitativo_destaques": destaques.strip() or None,
+                "qualitativo_desenvolvimento": desenvolvimento.strip() or None,
+                "qualitativo_entregas_gestor": entregas_gestor.strip() if entregas_gestor else None,
+            }
+
+            try:
+                supabase.table("avaliacoes_lider").insert(payload).execute()
+                st.session_state.pagina = "sucesso"
+                st.rerun()
+            except Exception as e:
+                st.error(f"Erro ao enviar a avaliação. Tente novamente. Detalhes: {e}")
+
+    st.markdown("""
+    <div class="rodape">
+        Programa Psicólogos nas Escolas · Apoio Educação · Secretaria de Estado da Educação de São Paulo<br>
+        As respostas são confidenciais e utilizadas exclusivamente para fins de desenvolvimento profissional.
+    </div>
+    """, unsafe_allow_html=True)
+
+# ════════════════════════════════════════════════════════════════════════════════
+# PÁGINA 3 — Confirmação de envio
+# ════════════════════════════════════════════════════════════════════════════════
+elif st.session_state.pagina == "sucesso":
+
+    st.markdown("""
+    <div style="text-align:center; padding: 3rem 1rem;">
+        <div style="font-size: 4rem;">✅</div>
+        <h2 style="color: #1a3a5c; margin-top: 1rem;">Avaliação enviada com sucesso!</h2>
+        <p style="color: #6b7280; font-size: 1rem; margin-top: 0.5rem;">
+            Obrigado pela sua participação. Suas respostas foram registradas e serão utilizadas 
+            exclusivamente para fins de desenvolvimento profissional.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.balloons()
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("📋 Responder nova avaliação", use_container_width=True, type="primary"):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+
+    st.markdown("""
+    <div class="rodape">
+        Programa Psicólogos nas Escolas · Apoio Educação · Secretaria de Estado da Educação de São Paulo<br>
+        As respostas são confidenciais e utilizadas exclusivamente para fins de desenvolvimento profissional.
+    </div>
+    """, unsafe_allow_html=True)
