@@ -126,6 +126,52 @@ URES = [
     "URE TAUBATE", "URE TUPA", "URE VOTORANTIM", "URE VOTUPORANGA",
 ]
 
+
+LIDERES = [
+    "Selecione o Líder",
+    "ADRIANA DAS GRAÇAS CARDOSO CÂNDIDO",
+    "AMANDA ACCIERI TONON",
+    "BRUNA DA CONCEICAO BISPO",
+    "BRUNO HENRIQUE DA SILVA TINEU",
+    "CAMILA CRISTINA DE ARAUJO",
+    "CHRISTIANIA SOARES DA SILVA",
+    "CRISTIANIA SOARES DA SILVA",
+    "DEVAIR AHRENS PIERAZO",
+    "DIONI BALBINO DE MOURA",
+    "EDUARDO DE OLIVEIRA",
+    "EMERSON RODRIGUES ZEFERINO",
+    "GISELLE DE JESUS SILVA",
+    "HENDIOLI BALBINO DE SOUZA",
+    "IVANA MARIA PEREIRA",
+    "JACKELINE APARECIDA CARDOSO GONÇALVES",
+    "JACKELINE CARDOSO SILVA",
+    "JANDIRA SILVA COSTA",
+    "JANAINA AMANDA MURBACH DA SILVA",
+    "JENIFFER KETLIN TEODORO MIRANDA",
+    "JESSICA FEITOSA BORGES DE BRITO",
+    "JESSICA PIMENTEL BATISTA MACHADO",
+    "KARINA BUENO DE SOUZA",
+    "LAIS COLACINO IDA",
+    "LARA FERNANDA LEAL VERRONI",
+    "MAICON DO SANTOS",
+    "MARIANA BORSARI BIRAGHI",
+    "MARINEZ RITA SANTANIELLO",
+    "MARIA JOSÉ FRANCISCA DE OLIVEIRA",
+    "MARIA LUCIA DE MOURA",
+    "MATHEUS FELTRIM",
+    "MICHELI CRISTINA FEITOSA DA COSTA SANTOS",
+    "MICHEL DOS SANTOS BISPO",
+    "RAFAEL FARIA MOURA SOUZA",
+    "RENATA CRISTINA DA SILVA MORAIS",
+    "RENAN ROCHA LOPES",
+    "TATIANE DE SANTANA JESUS",
+    "THAIANE CAROLINE SIQUEIRA DONADAI",
+    "VALDETE REGO FERREIRA",
+    "VANESSA COELHO DA SILVA",
+    "VICENTE ANGELO DA ROCHA",
+    "VINÍCIUS PEREIRA MARQUES",
+]
+
 ESCALA = {
     "1 — Raramente observado": 1,
     "2 — Observado ocasionalmente, de forma inconsistente": 2,
@@ -270,7 +316,7 @@ elif st.session_state.pagina == "formulario":
 
     ure = st.selectbox("URE *", URES, index=0, placeholder="Digite para buscar sua URE...")
     email = st.text_input("E-mail institucional *", placeholder="nome@educacao.sp.gov.br")
-    nome_lider = st.text_input("Nome do Líder avaliado *", placeholder="Nome completo do Líder Regional")
+    nome_lider = st.selectbox("Nome do Líder avaliado *", LIDERES, index=0, placeholder="Digite para buscar o nome do Líder...")
 
     # ── Competências ──────────────────────────────────────────────────────────
     respostas = {}
@@ -365,8 +411,8 @@ elif st.session_state.pagina == "formulario":
             erros.append("Selecione a URE.")
         if not email or "@" not in email:
             erros.append("Informe um e-mail institucional válido.")
-        if not nome_lider.strip():
-            erros.append("Informe o nome do Líder avaliado.")
+        if nome_lider == "Selecione o Líder":
+            erros.append("Selecione o nome do Líder avaliado.")
         return erros
 
     if st.button("✅ Enviar avaliação", type="primary", use_container_width=True):
