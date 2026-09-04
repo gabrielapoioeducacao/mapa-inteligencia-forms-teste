@@ -316,11 +316,40 @@ elif st.session_state.pagina == "formulario":
         height=120,
     )
 
-    # Pergunta exclusiva do Gestor
+    # Bloco exclusivo do Gestor
+    entregas_nota = None
+    entregas_sem_insumos = False
     entregas_gestor = None
+
     if perfil == "Gestor do Programa":
         st.markdown('<div class="secao-titulo">Bloco Exclusivo — Gestor do Programa</div>', unsafe_allow_html=True)
-        st.markdown("Esta questão deve ser respondida somente pelo **Gestor do Programa**.")
+        st.markdown("Este bloco deve ser respondido somente pelo **Gestor do Programa**.")
+
+        st.markdown("**Avaliação de Entregas**")
+        st.markdown('<div class="comportamento">📋 Avalie o desempenho do líder em relação às entregas pactuadas sob sua responsabilidade no período.</div>', unsafe_allow_html=True)
+
+        ESCALA_ENTREGAS = {
+            "Não Avaliado — Sem insumos suficientes": None,
+            "1 — Muito abaixo do esperado: Não realiza ou realiza de forma insuficiente as entregas.": 1,
+            "2 — Abaixo do esperado: Realiza parte das entregas, com atrasos, inconsistências ou necessidade frequente de cobrança.": 2,
+            "3 — Esperado: Realiza as entregas pactuadas dentro dos prazos e parâmetros estabelecidos.": 3,
+            "4 — Acima do esperado: Realiza as entregas com qualidade, autonomia e consistência, antecipando necessidades.": 4,
+            "5 — Referência: Realiza integralmente as entregas com elevada qualidade, autonomia e consistência, qualificando os processos.": 5,
+        }
+
+        escolha_entrega = st.radio(
+            "Avaliação de Entregas:",
+            list(ESCALA_ENTREGAS.keys()),
+            key="radio_entregas",
+            index=0,
+            label_visibility="collapsed",
+        )
+
+        entregas_nota = ESCALA_ENTREGAS[escolha_entrega]
+        entregas_sem_insumos = (escolha_entrega == "Não Avaliado — Sem insumos suficientes")
+
+        st.divider()
+
         entregas_gestor = st.text_area(
             "Quais são os pontos de desenvolvimento e potenciais do líder em relação às entregas?",
             placeholder="Considere prazos, qualidade e consistência das entregas pactuadas...",
@@ -382,6 +411,8 @@ elif st.session_state.pagina == "formulario":
                 # Qualitativo
                 "qualitativo_destaques": destaques.strip() or None,
                 "qualitativo_desenvolvimento": desenvolvimento.strip() or None,
+                "entregas_nota": entregas_nota,
+                "entregas_sem_insumos": entregas_sem_insumos,
                 "qualitativo_entregas_gestor": entregas_gestor.strip() if entregas_gestor else None,
             }
 
